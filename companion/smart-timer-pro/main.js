@@ -47,7 +47,7 @@ class SmartTimerProInstance extends InstanceBase {
 			{
 				type: 'textinput',
 				id: 'host',
-				label: 'SmartCountdownTimer Pro IP Address (e.g. 192.168.1.50)',
+				label: 'Smart Timer Pro IP Address (e.g. 192.168.1.50)',
 				width: 8,
 				regex: Regex.IP,
 			},
@@ -96,7 +96,7 @@ class SmartTimerProInstance extends InstanceBase {
 			} catch (e) {
 				this.updateStatus(
 					InstanceStatus.ConnectionFailure,
-					'Cannot connect to SmartCountdownTimer Pro',
+					'Cannot connect to Smart Timer Pro',
 				);
 			}
 		}, 300);

@@ -25,7 +25,7 @@ Bitfocus Companion module to control **Smart Timer Pro** stage timer from an Elg
 ### Method 2: Import Package (.tgz)
 
 1. In Companion: Modules > Import Module Package
-2. Select the `companion-module-smart-timer-pro-1.0.0.tgz` file
+2. Select the `companion-module-smart-timer-pro-1.4.0.tgz` file
 
 ### Method 3: Manual Install (Companion Pi)
 
@@ -74,7 +74,7 @@ sudo systemctl restart companion
 
 ## Requirements
 
-- Smart Timer Pro v1.2.0 or later running on the same network
+- Smart Timer Pro v1.4.0 or later running on the same network
 - Bitfocus Companion v3.0 or later
 - Elgato Stream Deck
 

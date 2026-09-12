@@ -5,3 +5,5 @@ dist/
 logo.json
 .DS_Store
 Thumbs.db
+companion/smart-timer-pro/pkg/
+companion/smart-timer-pro/*.tgz

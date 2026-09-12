@@ -3,7 +3,7 @@
 Professional Stage Timer for Windows -- developed for **smartchoice**.
 
 [![Licença](https://img.shields.io/badge/Licen%C3%A7a-Propriet%C3%A1ria-blue.svg)](LICENSE)
-[![Versão](https://img.shields.io/badge/Vers%C3%A3o-1.2.0-green.svg)](https://github.com/sharillas/Smart-Timer-Pro/releases)
+[![Versão](https://img.shields.io/badge/Vers%C3%A3o-1.4.0-green.svg)](https://github.com/sharillas/Smart-Timer-Pro/releases)
 [![Plataforma](https://img.shields.io/badge/Plataforma-Windows%20x64-lightgrey.svg)](https://github.com/sharillas/Smart-Timer-Pro)
 [![Electron](https://img.shields.io/badge/Electron-28-blue.svg)](https://www.electronjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)

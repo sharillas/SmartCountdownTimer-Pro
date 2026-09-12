@@ -27,7 +27,10 @@ manifest.runtime.api = 'nodejs-ipc';
 manifest.runtime.apiVersion = frameworkPkg.version;
 fs.writeFileSync(path.join(companionDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
-// 3. Create minimal package.json in pkg/
+// 3. Copy main.js to pkg/
+fs.copyFileSync(path.join(root, 'main.js'), path.join(pkgDir, 'main.js'));
+
+// 4. Create minimal package.json in pkg/
 const pkgJson = {
     name: manifest.name,
     version: manifest.version,
@@ -37,14 +40,15 @@ const pkgJson = {
 };
 fs.writeFileSync(path.join(pkgDir, 'package.json'), JSON.stringify(pkgJson, null, 2));
 
-// 4. Copy HELP.md to pkg/
+// 5. Copy HELP.md to pkg/
 fs.copyFileSync(path.join(root, 'HELP.md'), path.join(pkgDir, 'HELP.md'));
 
-// 5. Create .tgz
-const outStream = fs.createWriteStream(path.join(root, 'pkg.tgz'));
+// 6. Create .tgz
+const outName = path.join(root, `companion-module-smart-timer-pro-${srcPackageJson.version}.tgz`);
+const outStream = fs.createWriteStream(outName);
 tar.create({ gzip: true, cwd: root }, ['pkg']).pipe(outStream);
 outStream.on('finish', () => {
-    console.log('pkg.tgz created successfully');
+    console.log(`${outName} created successfully`);
 });
 outStream.on('error', (e) => {
     console.error('Failed to create tgz:', e);
