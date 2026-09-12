@@ -6,6 +6,11 @@ const {
 	combineRgb,
 } = require('@companion-module/base');
 
+const ICONS = require('./icons.js');
+
+const BLACK = combineRgb(0, 0, 0);
+const WHITE = combineRgb(255, 255, 255);
+
 class SmartTimerProInstance extends InstanceBase {
 	async init(config) {
 		this.config = config;
@@ -20,7 +25,6 @@ class SmartTimerProInstance extends InstanceBase {
 			mode: 'countdown',
 			messages: [],
 		};
-
 		this.initActions();
 		this.initVariables();
 		this.initFeedbacks();
@@ -76,11 +80,18 @@ class SmartTimerProInstance extends InstanceBase {
 					const data = await response.json();
 					this.state = data;
 
+					const raw = data.raw_seconds || 0;
+					const abs = Math.abs(raw);
+
 					const updates = {
 						time: data.time,
-						raw_seconds: data.raw_seconds,
+						raw_seconds: raw,
 						over_time: data.over_time,
 						mode: data.mode,
+						sign: raw < 0 ? '-' : '',
+						hours: Math.floor(abs / 3600).toString().padStart(2, '0'),
+						minutes: Math.floor((abs % 3600) / 60).toString().padStart(2, '0'),
+						seconds: (abs % 60).toString().padStart(2, '0'),
 					};
 
 					for (let i = 0; i < 10; i++) {
@@ -108,6 +119,10 @@ class SmartTimerProInstance extends InstanceBase {
 			{ name: 'Raw Time in Seconds', variableId: 'raw_seconds' },
 			{ name: 'Over Time (+MM:SS)', variableId: 'over_time' },
 			{ name: 'Current Mode', variableId: 'mode' },
+			{ name: 'Hours (HH)', variableId: 'hours' },
+			{ name: 'Minutes (MM)', variableId: 'minutes' },
+			{ name: 'Seconds (SS)', variableId: 'seconds' },
+			{ name: 'Sign (- when overtime)', variableId: 'sign' },
 		];
 
 		for (let i = 1; i <= 10; i++) {
@@ -125,7 +140,7 @@ class SmartTimerProInstance extends InstanceBase {
 			timer_state: {
 				name: 'Auto-Color Timer Button',
 				type: 'advanced',
-				label: 'Timer State Colors (green=running, orange=warning, red=expired)',
+				label: 'Timer State Border Colors (green=running, orange=warning, red=expired)',
 				options: [],
 				callback: () => {
 					if (this.state.mode !== 'countdown') return {};
@@ -133,19 +148,19 @@ class SmartTimerProInstance extends InstanceBase {
 
 					if (this.state.raw_seconds <= 0) {
 						return {
-							bgcolor: combineRgb(239, 68, 68),
-							color: combineRgb(255, 255, 255),
+							borderColor: combineRgb(239, 68, 68),
+							color: WHITE,
 						};
 					}
 					if (this.state.raw_seconds <= 120) {
 						return {
-							bgcolor: combineRgb(245, 158, 11),
-							color: combineRgb(0, 0, 0),
+							borderColor: combineRgb(245, 158, 11),
+							color: WHITE,
 						};
 					}
 					return {
-						bgcolor: combineRgb(16, 185, 129),
-						color: combineRgb(255, 255, 255),
+						borderColor: combineRgb(16, 185, 129),
+						color: WHITE,
 					};
 				},
 			},
@@ -154,8 +169,8 @@ class SmartTimerProInstance extends InstanceBase {
 				type: 'boolean',
 				label: 'Message is active on screen',
 				defaultStyle: {
-					bgcolor: combineRgb(0, 163, 224),
-					color: combineRgb(255, 255, 255),
+					borderColor: combineRgb(0, 163, 224),
+					color: WHITE,
 				},
 				options: [],
 				callback: () => {
@@ -319,17 +334,63 @@ class SmartTimerProInstance extends InstanceBase {
 	initPresets() {
 		const presets = {};
 
+		const iconButton = (icon, text, border, extra = {}) => ({
+			text,
+			size: '12',
+			color: WHITE,
+			bgcolor: BLACK,
+			borderWidth: 4,
+			borderColor: combineRgb(...border),
+			png64: ICONS[icon],
+			pngalignment: 'top:center',
+			alignment: 'center:bottom',
+			show_topbar: false,
+			...extra,
+		});
+
+		const textButton = (text, border, extra = {}) => ({
+			text,
+			size: '14',
+			color: WHITE,
+			bgcolor: BLACK,
+			borderWidth: 4,
+			borderColor: combineRgb(...border),
+			alignment: 'center:center',
+			show_topbar: false,
+			...extra,
+		});
+
+		// Timer Display (HH : MM : SS read-only)
+		presets['display_hours'] = {
+			type: 'button',
+			category: 'Timer Display',
+			name: 'Timer Display - Hours (HH)',
+			style: textButton('$(smart-timer-pro:sign)$(smart-timer-pro:hours)', [0, 200, 255], { size: '40' }),
+			steps: [],
+			feedbacks: [],
+		};
+		presets['display_minutes'] = {
+			type: 'button',
+			category: 'Timer Display',
+			name: 'Timer Display - Minutes (MM)',
+			style: textButton('$(smart-timer-pro:minutes)', [16, 185, 129], { size: '40' }),
+			steps: [],
+			feedbacks: [],
+		};
+		presets['display_seconds'] = {
+			type: 'button',
+			category: 'Timer Display',
+			name: 'Timer Display - Seconds (SS)',
+			style: textButton('$(smart-timer-pro:seconds)', [245, 158, 11], { size: '40' }),
+			steps: [],
+			feedbacks: [],
+		};
+
 		presets['smart_timer'] = {
 			type: 'button',
 			category: 'Smart Controls',
 			name: 'Smart Timer Button (toggle + time display)',
-			style: {
-				text: '▶ GO\\n$(smart-timer-pro:time)',
-				size: 'auto',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0),
-				show_topbar: false,
-			},
+			style: iconButton('play_circle_filled', '$(smart-timer-pro:time)', [51, 65, 85], { size: '14' }),
 			steps: [
 				{ down: [{ actionId: 'toggle_playback', options: {} }], up: [] },
 			],
@@ -374,13 +435,7 @@ class SmartTimerProInstance extends InstanceBase {
 			type: 'button',
 			category: 'Smart Controls',
 			name: 'Toggle Message',
-			style: {
-				text: '💬\\nMSG',
-				size: 'auto',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0),
-				show_topbar: false,
-			},
+			style: iconButton('chat', 'MSG', [0, 163, 224], { size: '14' }),
 			steps: [
 				{ down: [{ actionId: 'toggle_msg', options: {} }], up: [] },
 			],
@@ -410,13 +465,7 @@ class SmartTimerProInstance extends InstanceBase {
 				type: 'button',
 				category: 'Quick Messages',
 				name: `Trigger Quick Message ${i}`,
-				style: {
-					text: `[${i}]\\n$(smart-timer-pro:msg_${i})`,
-					size: '14',
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(0, 100, 160),
-					show_topbar: false,
-				},
+				style: textButton(`[${i}] $(smart-timer-pro:msg_${i})`, [0, 150, 200], { size: '12' }),
 				steps: [
 					{
 						down: [
@@ -431,23 +480,17 @@ class SmartTimerProInstance extends InstanceBase {
 
 		// Display Modes
 		const modes = [
-			{ id: 'countdown', label: 'Countdown', icon: '⏱', color: [16, 185, 129] },
-			{ id: 'countup', label: 'Count-Up', icon: '⏫', color: [0, 163, 224] },
-			{ id: 'timeofday', label: 'Time of Day', icon: '🕐', color: [139, 92, 246] },
-			{ id: 'logo', label: 'Idle / Logo', icon: '🖼', color: [100, 116, 139] },
+			{ id: 'countdown', label: 'Countdown', icon: 'timer', color: [16, 185, 129] },
+			{ id: 'countup', label: 'Count-Up', icon: 'trending_up', color: [0, 163, 224] },
+			{ id: 'timeofday', label: 'Clock', icon: 'schedule', color: [139, 92, 246] },
+			{ id: 'logo', label: 'Logo', icon: 'image', color: [100, 116, 139] },
 		];
 		modes.forEach((mode) => {
 			presets[`mode_${mode.id}`] = {
 				type: 'button',
 				category: 'Display Modes',
 				name: `${mode.label} Mode`,
-				style: {
-					text: `${mode.icon}\\n${mode.label}`,
-					size: '14',
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(...mode.color),
-					show_topbar: false,
-				},
+				style: iconButton(mode.icon, mode.label, mode.color),
 				steps: [
 					{
 						down: [
@@ -475,13 +518,7 @@ class SmartTimerProInstance extends InstanceBase {
 				type: 'button',
 				category: 'Quick Times',
 				name: `Reset to ${t.label}`,
-				style: {
-					text: `🔄\\n${t.label}`,
-					size: 'auto',
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(13, 20, 45),
-					show_topbar: false,
-				},
+				style: iconButton('av_timer', t.label, [51, 65, 85]),
 				steps: [
 					{
 						down: [
@@ -499,13 +536,7 @@ class SmartTimerProInstance extends InstanceBase {
 			type: 'button',
 			category: 'Manual Adjustments',
 			name: '+1 Minute',
-			style: {
-				text: '➕\\n+1m',
-				size: 'auto',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(20, 40, 60),
-				show_topbar: false,
-			},
+			style: iconButton('add_circle_outline', '+1m', [16, 185, 129]),
 			steps: [
 				{ down: [{ actionId: 'add', options: { sec: 60 } }], up: [] },
 			],
@@ -516,13 +547,7 @@ class SmartTimerProInstance extends InstanceBase {
 			type: 'button',
 			category: 'Manual Adjustments',
 			name: '-1 Minute',
-			style: {
-				text: '➖\\n-1m',
-				size: 'auto',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(20, 40, 60),
-				show_topbar: false,
-			},
+			style: iconButton('remove_circle_outline', '-1m', [245, 158, 11]),
 			steps: [
 				{ down: [{ actionId: 'add', options: { sec: -60 } }], up: [] },
 			],
@@ -531,10 +556,10 @@ class SmartTimerProInstance extends InstanceBase {
 
 		// Status Indicator Controls
 		const indicators = [
-			{ id: 'bar_on', label: 'Loading Bar ON', icon: '▮', type: 'bar', action: 'on', bg: [16, 185, 129] },
-			{ id: 'bar_off', label: 'Loading Bar OFF', icon: '▯', type: 'bar', action: 'off', bg: [100, 116, 139] },
-			{ id: 'semaforo_on', label: 'Semáforo ON', icon: '🚦', type: 'semaforo', action: 'on', bg: [16, 185, 129] },
-			{ id: 'semaforo_off', label: 'Semáforo OFF', icon: '🚫', type: 'semaforo', action: 'off', bg: [100, 116, 139] },
+			{ id: 'bar_on', label: 'Bar ON', icon: 'linear_scale', type: 'bar', action: 'on', border: [16, 185, 129] },
+			{ id: 'bar_off', label: 'Bar OFF', icon: 'linear_scale', type: 'bar', action: 'off', border: [100, 116, 139] },
+			{ id: 'semaforo_on', label: 'Semáforo ON', icon: 'traffic', type: 'semaforo', action: 'on', border: [16, 185, 129] },
+			{ id: 'semaforo_off', label: 'Semáforo OFF', icon: 'traffic', type: 'semaforo', action: 'off', border: [100, 116, 139] },
 		];
 
 		indicators.forEach((ind) => {
@@ -542,13 +567,7 @@ class SmartTimerProInstance extends InstanceBase {
 				type: 'button',
 				category: 'Status Indicator',
 				name: ind.label,
-				style: {
-					text: `${ind.icon}\\n${ind.label}`,
-					size: '14',
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(...ind.bg),
-					show_topbar: false,
-				},
+				style: iconButton(ind.icon, ind.label, ind.border),
 				steps: [
 					{
 						down: [{ actionId: 'set_indicator', options: { type: ind.type, action: ind.action } }],

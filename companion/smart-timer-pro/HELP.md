@@ -5,13 +5,15 @@ Bitfocus Companion module to control **Smart Timer Pro** stage timer from an Elg
 ## Features
 
 - **GO / Pause** -- Start/pause buttons with GO and PAUSE icons
-- **Smart Timer Button** -- Toggle start/pause with live time display and auto-coloring (green=running, orange=warning <2min, red=expired)
+- **Smart Timer Button** -- Toggle start/pause with live time display and auto-coloring border (green=running, orange=warning <2min, red=expired)
+- **Timer Display** -- Read-only HH / MM / SS display across 3 big buttons
 - **Reset Time** -- Reset to last set time
 - **Display Modes** -- Switch between Countdown, Count-Up, Time of Day, and Idle/Logo
 - **Quick Messages** -- 5 instant triggers for pre-configured messages
 - **Quick Times** -- Reset to 1m, 5m, 10m, 15m, 30m, 60m with one button
 - **Manual Adjustments** -- +1min / -1min on the fly
 - **Toggle Message** -- Show/hide message on the presenter screen
+- **Design** -- Black buttons with white text and colored borders, with large white Google Material icons
 
 ## Installation
 
@@ -56,6 +58,7 @@ sudo systemctl restart companion
 
 | Category | Presets |
 |---|---|
+| Timer Display | Hours (HH), Minutes (MM), Seconds (SS) -- big read-only display buttons |
 | Smart Controls | Smart Timer Button (toggle + time), GO (start), Pause, Reset Time, Toggle Message |
 | Quick Messages | Instant triggers for slots 1-5 |
 | Display Modes | Countdown, Count-Up, Time of Day, Idle/Logo |
@@ -70,12 +73,16 @@ sudo systemctl restart companion
 | `$(smart-timer-pro:raw_seconds)` | Raw seconds value |
 | `$(smart-timer-pro:over_time)` | Overtime string (+MM:SS) |
 | `$(smart-timer-pro:mode)` | Current mode |
+| `$(smart-timer-pro:hours)` | Hours (HH, zero-padded) |
+| `$(smart-timer-pro:minutes)` | Minutes (MM, zero-padded) |
+| `$(smart-timer-pro:seconds)` | Seconds (SS, zero-padded) |
+| `$(smart-timer-pro:sign)` | "-" when the timer is in overtime |
 | `$(smart-timer-pro:msg_1)` through `$(smart-timer-pro:msg_5)` | Quick message text |
 
 ## Requirements
 
 - Smart Timer Pro v1.4.0 or later running on the same network
-- Bitfocus Companion v3.0 or later
+- Bitfocus Companion v3.4 or later (for colored button borders)
 - Elgato Stream Deck
 
 ## Support

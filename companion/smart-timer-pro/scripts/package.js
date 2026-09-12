@@ -27,8 +27,9 @@ manifest.runtime.api = 'nodejs-ipc';
 manifest.runtime.apiVersion = frameworkPkg.version;
 fs.writeFileSync(path.join(companionDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
-// 3. Copy main.js to pkg/
+// 3. Copy main.js and icons.js to pkg/
 fs.copyFileSync(path.join(root, 'main.js'), path.join(pkgDir, 'main.js'));
+fs.copyFileSync(path.join(root, 'icons.js'), path.join(pkgDir, 'icons.js'));
 
 // 4. Create minimal package.json in pkg/
 const pkgJson = {
