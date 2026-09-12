@@ -1,12 +1,38 @@
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const tar = require('tar');
 
 const root = path.resolve(__dirname, '..');
 const pkgDir = path.join(root, 'pkg');
 const companionDir = path.join(pkgDir, 'companion');
 
-// 1. Ensure pkg/companion exists and copy manifest
+// 1. Bundle main.js + icons.js + @companion-module/base with webpack into pkg/main.js
+console.log('Bundling module with webpack...');
+const webpackCmd = path.join(
+    root,
+    'node_modules',
+    '.bin',
+    process.platform === 'win32' ? 'webpack.cmd' : 'webpack'
+);
+const buildResult = spawnSync(
+    webpackCmd,
+    [
+        '-c',
+        path.join(root, 'node_modules', '@companion-module', 'tools', 'webpack.config.cjs'),
+        '--env',
+        `ROOT=${root}`,
+        '--output-library-type',
+        'commonjs2',
+    ],
+    { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' }
+);
+if (buildResult.status !== 0) {
+    console.error('Webpack build failed');
+    process.exit(1);
+}
+
+// 2. Ensure pkg/companion exists and copy manifest
 if (!fs.existsSync(companionDir)) {
     fs.mkdirSync(companionDir, { recursive: true });
 }
@@ -15,7 +41,7 @@ fs.copyFileSync(
     path.join(companionDir, 'manifest.json')
 );
 
-// 2. Modify manifest
+// 3. Modify manifest
 const frameworkPkg = JSON.parse(
     fs.readFileSync(path.join(root, 'node_modules', '@companion-module', 'base', 'package.json'), 'utf8')
 );
@@ -26,10 +52,6 @@ manifest.version = srcPackageJson.version;
 manifest.runtime.api = 'nodejs-ipc';
 manifest.runtime.apiVersion = frameworkPkg.version;
 fs.writeFileSync(path.join(companionDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-
-// 3. Copy main.js and icons.js to pkg/
-fs.copyFileSync(path.join(root, 'main.js'), path.join(pkgDir, 'main.js'));
-fs.copyFileSync(path.join(root, 'icons.js'), path.join(pkgDir, 'icons.js'));
 
 // 4. Create minimal package.json in pkg/
 const pkgJson = {

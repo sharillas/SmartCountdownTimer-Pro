@@ -9,17 +9,17 @@
   "bugs": "https://github.com/sharillas/Smart-Timer-Pro/issues",
   "maintainers": [
     {
-      "name": "smartchoice"
+      "name": "Nelson Teixeira"
     }
   ],
-  "legacyIds": [],
+  "legacyIds": ["smartcountdowntimer-pro"],
   "runtime": {
     "type": "node18",
     "api": "nodejs-ipc",
     "apiVersion": "1.0.0",
     "entrypoint": "../main.js"
   },
-  "manufacturer": "smartchoice",
+  "manufacturer": "Nelson Teixeira",
   "products": ["Smart Timer Pro"],
   "keywords": ["timer", "countdown", "stage", "production", "stream deck"]
 }

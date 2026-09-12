@@ -4,12 +4,12 @@
   "main": "main.js",
   "license": "UNLICENSED",
   "type": "commonjs",
-  "manufacturer": "smartchoice",
+  "manufacturer": "Nelson Teixeira",
   "product": "Smart Timer Pro",
   "shortname": "smart-timer-pro",
   "description": "Bitfocus Companion module for Smart Timer Pro stage timer",
   "scripts": {
-    "build": "companion-module-build"
+    "build": "node scripts/package.js"
   },
   "dependencies": {
     "@companion-module/base": "^1.8.0"
