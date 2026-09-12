@@ -140,7 +140,7 @@ class SmartTimerProInstance extends InstanceBase {
 			timer_state: {
 				name: 'Auto-Color Timer Button',
 				type: 'advanced',
-				label: 'Timer State Border Colors (green=running, orange=warning, red=expired)',
+				label: 'Timer State Colors (green=running, orange=warning, red=expired)',
 				options: [],
 				callback: () => {
 					if (this.state.mode !== 'countdown') return {};
@@ -148,18 +148,18 @@ class SmartTimerProInstance extends InstanceBase {
 
 					if (this.state.raw_seconds <= 0) {
 						return {
-							borderColor: combineRgb(239, 68, 68),
+							bgcolor: combineRgb(239, 68, 68),
 							color: WHITE,
 						};
 					}
 					if (this.state.raw_seconds <= 120) {
 						return {
-							borderColor: combineRgb(245, 158, 11),
+							bgcolor: combineRgb(245, 158, 11),
 							color: WHITE,
 						};
 					}
 					return {
-						borderColor: combineRgb(16, 185, 129),
+						bgcolor: combineRgb(16, 185, 129),
 						color: WHITE,
 					};
 				},
@@ -169,7 +169,7 @@ class SmartTimerProInstance extends InstanceBase {
 				type: 'boolean',
 				label: 'Message is active on screen',
 				defaultStyle: {
-					borderColor: combineRgb(0, 163, 224),
+					bgcolor: combineRgb(0, 163, 224),
 					color: WHITE,
 				},
 				options: [],
@@ -334,63 +334,79 @@ class SmartTimerProInstance extends InstanceBase {
 	initPresets() {
 		const presets = {};
 
-		const iconButton = (icon, text, border, extra = {}) => ({
-			text,
-			size: '12',
-			color: WHITE,
-			bgcolor: BLACK,
-			borderWidth: 4,
+		const box = (border) => ({
+			id: 'bg',
+			type: 'box',
+			color: BLACK,
 			borderColor: combineRgb(...border),
-			png64: ICONS[icon],
-			pngalignment: 'top:center',
-			alignment: 'center:bottom',
-			show_topbar: false,
-			...extra,
+			borderWidth: 4,
+			borderPosition: 'inside',
+			x: 0,
+			y: 0,
+			width: 100,
+			height: 100,
 		});
 
-		const textButton = (text, border, extra = {}) => ({
+		const iconElement = (icon) => ({
+			id: 'ic',
+			type: 'image',
+			base64Image: ICONS[icon],
+			halign: 'center',
+			valign: 'center',
+			fillMode: 'fit',
+			x: 0,
+			y: 3,
+			width: 100,
+			height: 62,
+		});
+
+		const labelElement = (text, opts = {}) => ({
+			id: 'tx',
+			type: 'text',
 			text,
-			size: '14',
 			color: WHITE,
-			bgcolor: BLACK,
-			borderWidth: 4,
-			borderColor: combineRgb(...border),
-			alignment: 'center:center',
-			show_topbar: false,
-			...extra,
+			halign: 'center',
+			valign: 'center',
+			fontsizeAllowShrink: true,
+			x: 0,
+			y: 64,
+			width: 100,
+			height: 36,
+			fontsize: 42,
+			...opts,
 		});
 
 		// Timer Display (HH : MM : SS read-only)
 		presets['display_hours'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Timer Display',
 			name: 'Timer Display - Hours (HH)',
-			style: textButton('$(smart-timer-pro:sign)$(smart-timer-pro:hours)', [0, 200, 255], { size: '40' }),
+			elements: [box([0, 200, 255]), labelElement('$(smart-timer-pro:sign)$(smart-timer-pro:hours)', { y: 0, height: 100, fontsize: 88, font: 'companion-mono' })],
 			steps: [],
 			feedbacks: [],
 		};
 		presets['display_minutes'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Timer Display',
 			name: 'Timer Display - Minutes (MM)',
-			style: textButton('$(smart-timer-pro:minutes)', [16, 185, 129], { size: '40' }),
+			elements: [box([16, 185, 129]), labelElement('$(smart-timer-pro:minutes)', { y: 0, height: 100, fontsize: 88, font: 'companion-mono' })],
 			steps: [],
 			feedbacks: [],
 		};
 		presets['display_seconds'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Timer Display',
 			name: 'Timer Display - Seconds (SS)',
-			style: textButton('$(smart-timer-pro:seconds)', [245, 158, 11], { size: '40' }),
+			elements: [box([245, 158, 11]), labelElement('$(smart-timer-pro:seconds)', { y: 0, height: 100, fontsize: 88, font: 'companion-mono' })],
 			steps: [],
 			feedbacks: [],
 		};
 
 		presets['smart_timer'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Smart Controls',
 			name: 'Smart Timer Button (toggle + time display)',
-			style: iconButton('play_circle_filled', '$(smart-timer-pro:time)', [51, 65, 85], { size: '14' }),
+			elements: [box([51, 65, 85]), iconElement('play_circle_filled'), labelElement('$(smart-timer-pro:time)', { fontsize: 46, font: 'companion-mono' })],
 			steps: [
 				{ down: [{ actionId: 'toggle_playback', options: {} }], up: [] },
 			],
@@ -432,10 +448,10 @@ class SmartTimerProInstance extends InstanceBase {
 		};
 
 		presets['smart_message'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Smart Controls',
 			name: 'Toggle Message',
-			style: iconButton('chat', 'MSG', [0, 163, 224], { size: '14' }),
+			elements: [box([0, 163, 224]), iconElement('chat'), labelElement('MSG', { fontsize: 46 })],
 			steps: [
 				{ down: [{ actionId: 'toggle_msg', options: {} }], up: [] },
 			],
@@ -462,10 +478,10 @@ class SmartTimerProInstance extends InstanceBase {
 		// Quick Messages Triggers (Slots 1-5)
 		for (let i = 1; i <= 5; i++) {
 			presets[`trigger_msg_${i}`] = {
-				type: 'button',
+				type: 'layered',
 				category: 'Quick Messages',
 				name: `Trigger Quick Message ${i}`,
-				style: textButton(`[${i}] $(smart-timer-pro:msg_${i})`, [0, 150, 200], { size: '12' }),
+				elements: [box([0, 150, 200]), labelElement(`[${i}] $(smart-timer-pro:msg_${i})`, { y: 0, height: 100, fontsize: 34 })],
 				steps: [
 					{
 						down: [
@@ -487,10 +503,10 @@ class SmartTimerProInstance extends InstanceBase {
 		];
 		modes.forEach((mode) => {
 			presets[`mode_${mode.id}`] = {
-				type: 'button',
+				type: 'layered',
 				category: 'Display Modes',
 				name: `${mode.label} Mode`,
-				style: iconButton(mode.icon, mode.label, mode.color),
+				elements: [box(mode.color), iconElement(mode.icon), labelElement(mode.label, { fontsize: 40 })],
 				steps: [
 					{
 						down: [
@@ -515,10 +531,10 @@ class SmartTimerProInstance extends InstanceBase {
 
 		quickTimes.forEach((t) => {
 			presets[`reset_${t.sec}`] = {
-				type: 'button',
+				type: 'layered',
 				category: 'Quick Times',
 				name: `Reset to ${t.label}`,
-				style: iconButton('av_timer', t.label, [51, 65, 85]),
+				elements: [box([51, 65, 85]), iconElement('av_timer'), labelElement(t.label, { fontsize: 48 })],
 				steps: [
 					{
 						down: [
@@ -533,10 +549,10 @@ class SmartTimerProInstance extends InstanceBase {
 
 		// Manual Adjustments
 		presets['add_min'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Manual Adjustments',
 			name: '+1 Minute',
-			style: iconButton('add_circle_outline', '+1m', [16, 185, 129]),
+			elements: [box([16, 185, 129]), iconElement('add_circle_outline'), labelElement('+1m', { fontsize: 46 })],
 			steps: [
 				{ down: [{ actionId: 'add', options: { sec: 60 } }], up: [] },
 			],
@@ -544,10 +560,10 @@ class SmartTimerProInstance extends InstanceBase {
 		};
 
 		presets['sub_min'] = {
-			type: 'button',
+			type: 'layered',
 			category: 'Manual Adjustments',
 			name: '-1 Minute',
-			style: iconButton('remove_circle_outline', '-1m', [245, 158, 11]),
+			elements: [box([245, 158, 11]), iconElement('remove_circle_outline'), labelElement('-1m', { fontsize: 46 })],
 			steps: [
 				{ down: [{ actionId: 'add', options: { sec: -60 } }], up: [] },
 			],
@@ -564,10 +580,10 @@ class SmartTimerProInstance extends InstanceBase {
 
 		indicators.forEach((ind) => {
 			presets[ind.id] = {
-				type: 'button',
+				type: 'layered',
 				category: 'Status Indicator',
 				name: ind.label,
-				style: iconButton(ind.icon, ind.label, ind.border),
+				elements: [box(ind.border), iconElement(ind.icon), labelElement(ind.label, { fontsize: 34 })],
 				steps: [
 					{
 						down: [{ actionId: 'set_indicator', options: { type: ind.type, action: ind.action } }],
